@@ -10,21 +10,20 @@ export default function () {
   
   console.log("Connection opened: " + url)
 
+  const publish = function(mark) {
+    Amqp.publish({
+      queue_name: "general",
+      body: "Ping from k6 -> " + mark
+    })
+  }
+
+  publish('A')
+  publish('B')
+  publish('C')
+
   const listener = function(data) { console.log('received data: ' + data) }
   Amqp.listen({
     queue_name: "general",
     listener: listener
   })
-  const publish = function(mark) {
-    Amqp.publish({
-      queue_name: "general",
-      body: "Ping from k6: " + mark
-    })
-  }
-
-  publish('A')
-  sleep('3s')
-  publish('B')
-  sleep('5s')
-  publish('C')
 }

@@ -95,15 +95,11 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 		return err
 	}
 
-	// forever := make(chan bool)
-
 	go func() {
 		for d := range msgs {
 			options.Listener(string(d.Body))
 		}
 	}()
-	// log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	// <-forever
 	return nil
 }
 
