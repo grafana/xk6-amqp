@@ -57,6 +57,52 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 	)
 }
 
+type ListenerType func(string) error
+
+type ListenOptions struct {
+	Listener  ListenerType
+	QueueName string
+}
+
+func (amqp *Amqp) Listen(options ListenOptions) error {
+	ch, err := amqp.Connection.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	name := options.QueueName
+	queue, err := ch.QueueDeclare(
+		name,  // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	if err != nil {
+		return err
+	}
+	msgs, err := ch.Consume(
+		queue.Name, // queue
+		"",         // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
+	)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for d := range msgs {
+			options.Listener(string(d.Body))
+		}
+	}()
+	return nil
+}
+
 func init() {
 	modules.Register("k6/x/amqp", &Amqp{
 		Version: version,
