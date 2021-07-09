@@ -10,6 +10,7 @@ const version = "v0.0.1"
 type Amqp struct {
 	Version    string
 	Connection *amqpDriver.Connection
+	Queues     *Queues
 }
 
 type AmqpOptions struct {
@@ -19,11 +20,37 @@ type AmqpOptions struct {
 type PublishOptions struct {
 	QueueName string
 	Body      string
+	Exchange  string
+	Mandatory bool
+	Immediate bool
+}
+
+type ConsumeOptions struct {
+	Consumer  string
+	AutoAck   bool
+	Exclusive bool
+	NoLocal   bool
+	NoWait    bool
+	Args      amqpDriver.Table
+}
+
+type ListenerType func(string) error
+
+type ListenOptions struct {
+	Listener  ListenerType
+	QueueName string
+	Consumer  string
+	AutoAck   bool
+	Exclusive bool
+	NoLocal   bool
+	NoWait    bool
+	Args      amqpDriver.Table
 }
 
 func (amqp *Amqp) Start(options AmqpOptions) error {
 	conn, err := amqpDriver.Dial(options.ConnectionUrl)
 	amqp.Connection = conn
+	amqp.Queues.Connection = conn
 	return err
 }
 
@@ -33,35 +60,17 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 		return err
 	}
 	defer ch.Close()
-	name := options.QueueName
-	queue, err := ch.QueueDeclare(
-		name,  // name
-		false, // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-	if err != nil {
-		return err
-	}
+
 	return ch.Publish(
-		"",         // exchange
-		queue.Name, // routing key
-		false,      // mandatory
-		false,      // immediate
+		options.Exchange,
+		options.QueueName,
+		options.Mandatory,
+		options.Immediate,
 		amqpDriver.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(options.Body),
 		},
 	)
-}
-
-type ListenerType func(string) error
-
-type ListenOptions struct {
-	Listener  ListenerType
-	QueueName string
 }
 
 func (amqp *Amqp) Listen(options ListenOptions) error {
@@ -70,26 +79,15 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 		return err
 	}
 	defer ch.Close()
-	name := options.QueueName
-	queue, err := ch.QueueDeclare(
-		name,  // name
-		false, // durable
-		false, // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-	if err != nil {
-		return err
-	}
+
 	msgs, err := ch.Consume(
-		queue.Name, // queue
-		"",         // consumer
-		true,       // auto-ack
-		false,      // exclusive
-		false,      // no-local
-		false,      // no-wait
-		nil,        // args
+		options.QueueName,
+		options.Consumer,
+		options.AutoAck,
+		options.Exclusive,
+		options.NoLocal,
+		options.NoWait,
+		options.Args,
 	)
 	if err != nil {
 		return err
@@ -104,7 +102,13 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 }
 
 func init() {
-	modules.Register("k6/x/amqp", &Amqp{
+
+	queues := Queues{}
+
+	generalAmqp := Amqp{
 		Version: version,
-	})
+		Queues:  &queues,
+	}
+	modules.Register("k6/x/amqp", &generalAmqp)
+	modules.Register("k6/x/amqp/queues", &queues)
 }
