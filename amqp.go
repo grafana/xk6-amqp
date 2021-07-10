@@ -11,6 +11,7 @@ type Amqp struct {
 	Version    string
 	Connection *amqpDriver.Connection
 	Queues     *Queues
+	Exchanges  *Exchanges
 }
 
 type AmqpOptions struct {
@@ -51,6 +52,7 @@ func (amqp *Amqp) Start(options AmqpOptions) error {
 	conn, err := amqpDriver.Dial(options.ConnectionUrl)
 	amqp.Connection = conn
 	amqp.Queues.Connection = conn
+	amqp.Exchanges.Connection = conn
 	return err
 }
 
@@ -104,11 +106,14 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 func init() {
 
 	queues := Queues{}
-
+	exchanges := Exchanges{}
 	generalAmqp := Amqp{
-		Version: version,
-		Queues:  &queues,
+		Version:   version,
+		Queues:    &queues,
+		Exchanges: &exchanges,
 	}
+
 	modules.Register("k6/x/amqp", &generalAmqp)
 	modules.Register("k6/x/amqp/queues", &queues)
+	modules.Register("k6/x/amqp/exchanges", &exchanges)
 }
