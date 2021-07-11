@@ -50,10 +50,4 @@ export default function () {
 		// no_wait: false,
     // args: null
   })
-  
-  console.log('Inspecting ' + queueName)
-  console.log(JSON.stringify(Queues.inspect(queueName), null, 2))
-
-  Queues.delete(queueName)
-  console.log(queueName + " removed")
 }
