@@ -7,8 +7,6 @@ export default function () {
     connection_url: url
   })
   
-  console.log("Connection opened: " + url)
-
   const exchangeName = 'K6 exchange'
 
   Exchanges.delete(exchangeName)

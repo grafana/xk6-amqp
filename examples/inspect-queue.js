@@ -7,7 +7,7 @@ export default function () {
     connection_url: url
   })
   
-  const queueName = 'K6 general'
+  const queueName = 'K6 queue'
   console.log('Inspecting ' + queueName)
   console.log(JSON.stringify(Queues.inspect(queueName), null, 2))
 }

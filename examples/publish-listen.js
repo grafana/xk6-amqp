@@ -7,10 +7,7 @@ export default function () {
   Amqp.start({
     connection_url: url
   })
-  
-  console.log("Connection opened: " + url)
-
-  const queueName = 'K6 general'
+  const queueName = 'K6 queue'
   const consumerName = 'K6 consumer'
 
   Queues.declare({
@@ -42,8 +39,8 @@ export default function () {
   Amqp.listen({
     queue_name: queueName,
     listener: listener,
-    consumer: consumerName,
     auto_ack: true,
+    consumer: consumerName,
     // exclusive: false,
 		// no_local: false,
 		// no_wait: false,
