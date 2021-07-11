@@ -22,6 +22,21 @@ type DeclareOptions struct {
 	Args             amqpDriver.Table
 }
 
+type QueueBindOptions struct {
+	QueueName    string
+	ExchangeName string
+	RoutingKey   string
+	NoWait       bool
+	Args         amqpDriver.Table
+}
+
+type QueueUnindOptions struct {
+	QueueName    string
+	ExchangeName string
+	RoutingKey   string
+	Args         amqpDriver.Table
+}
+
 func (queues *Queues) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 	ch, err := queues.Connection.Channel()
 	if err != nil {
@@ -60,4 +75,33 @@ func (queues *Queues) Delete(name string) error {
 		false, // noWait
 	)
 	return err
+}
+
+func (queues *Queues) Bind(options QueueBindOptions) error {
+	ch, err := queues.Connection.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	return ch.QueueBind(
+		options.QueueName,
+		options.RoutingKey,
+		options.ExchangeName,
+		options.NoWait,
+		options.Args,
+	)
+}
+
+func (queues *Queues) Unbind(options QueueUnindOptions) error {
+	ch, err := queues.Connection.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	return ch.QueueUnbind(
+		options.QueueName,
+		options.RoutingKey,
+		options.ExchangeName,
+		options.Args,
+	)
 }
