@@ -23,6 +23,22 @@ type EchangeDeclareOptions struct {
 	Args       amqpDriver.Table
 }
 
+type ExchangeBindOptions struct {
+	DestinationExchangeName string
+	SourceExchangeName      string
+	RoutingKey              string
+	NoWait                  bool
+	Args                    amqpDriver.Table
+}
+
+type ExchangeUnindOptions struct {
+	DestinationExchangeName string
+	SourceExchangeName      string
+	RoutingKey              string
+	NoWait                  bool
+	Args                    amqpDriver.Table
+}
+
 func (exchanges *Exchanges) Declare(options EchangeDeclareOptions) error {
 	ch, err := exchanges.Connection.Channel()
 	if err != nil {
@@ -50,5 +66,35 @@ func (exchanges *Exchanges) Delete(name string) error {
 		name,
 		false, // ifUnused
 		false, // noWait
+	)
+}
+
+func (exchanges *Exchanges) Bind(options ExchangeBindOptions) error {
+	ch, err := exchanges.Connection.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	return ch.ExchangeBind(
+		options.DestinationExchangeName,
+		options.RoutingKey,
+		options.SourceExchangeName,
+		options.NoWait,
+		options.Args,
+	)
+}
+
+func (exchanges *Exchanges) Unbind(options ExchangeUnindOptions) error {
+	ch, err := exchanges.Connection.Channel()
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	return ch.ExchangeUnbind(
+		options.DestinationExchangeName,
+		options.RoutingKey,
+		options.SourceExchangeName,
+		options.NoWait,
+		options.Args,
 	)
 }
