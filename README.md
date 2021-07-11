@@ -45,9 +45,48 @@ $ ./build.sh && ./k6 run my-test-script.js
 
 ```javascript
 import Amqp from 'k6/x/amqp';
+import Queues from 'k6/x/amqp/queues';
 
 export default function () {
   console.log("K6 amqp extension enabled, version: " + Amqp.version)
+  const url = "amqp://guest:guest@localhost:5672/"
+  Amqp.start({
+    connection_url: url
+  })
+  console.log("Connection opened: " + url)
+  
+  const queueName = 'K6 general'
+  
+  Queues.declare({
+    name: queueName,
+    // durable: false,
+    // delete_when_unused: false,
+    // exclusive: false,
+    // no_wait: false,
+    // args: null
+  })
+
+  console.log(queueName + " queue is ready")
+
+  Amqp.publish({
+    queue_name: queueName,
+    body: "Ping from k6"
+    // exchange: '',
+    // mandatory: false,
+    // immediate: false,
+  })
+
+  const listener = function(data) { console.log('received data: ' + data) }
+  Amqp.listen({
+    queue_name: queueName,
+    listener: listener,
+    // consumer: '',
+    // auto_ack: true,
+    // exclusive: false,
+		// no_local: false,
+		// no_wait: false,
+    // args: null
+  })
 }
 
 ```
@@ -70,15 +109,18 @@ $ ./k6 run script.js
   scenarios: (100.00%) 1 scenario, 1 max VUs, 10m30s max duration (incl. graceful stop):
            * default: 1 iterations for each of 1 VUs (maxDuration: 10m0s, gracefulStop: 30s)
 
-INFO[0000] K6 amqp extension enabled, version: v0.0.1
+INFO[0000] K6 amqp extension enabled, version: v0.0.1    source=console
+INFO[0000] Connection opened: amqp://guest:guest@localhost:5672/  source=console
+INFO[0000] K6 general queue is ready                     source=console
+INFO[0000] received data: Ping from k6                   source=console
 
 running (00m00.0s), 0/1 VUs, 1 complete and 0 interrupted iterations
 default ✓ [======================================] 1 VUs  00m00.0s/10m0s  1/1 iters, 1 per VU
 
      data_received........: 0 B 0 B/s
      data_sent............: 0 B 0 B/s
-     iteration_duration...: avg=9.64ms min=9.64ms med=9.64ms max=9.64ms p(90)=9.64ms p(95)=9.64ms
-     iterations...........: 1   25.017512/s
+     iteration_duration...: avg=31.37ms min=31.37ms med=31.37ms max=31.37ms p(90)=31.37ms p(95)=31.37ms
+     iterations...........: 1   30.855627/s
 
 ```
 
