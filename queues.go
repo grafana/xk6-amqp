@@ -105,3 +105,12 @@ func (queues *Queues) Unbind(options QueueUnindOptions) error {
 		options.Args,
 	)
 }
+
+func (queues *Queues) Purge(name string, noWait bool) (int, error) {
+	ch, err := queues.Connection.Channel()
+	if err != nil {
+		return 0, err
+	}
+	defer ch.Close()
+	return ch.QueuePurge(name, noWait)
+}
