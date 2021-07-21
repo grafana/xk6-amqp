@@ -1,4 +1,4 @@
-module github.com/k6io/xk6-amqp
+module github.com/grafana/xk6-amqp
 
 go 1.15
 
