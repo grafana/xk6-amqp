@@ -114,6 +114,6 @@ func init() {
 	}
 
 	modules.Register("k6/x/amqp", &generalAmqp)
-	modules.Register("k6/x/amqp/queues", &queues)
-	modules.Register("k6/x/amqp/exchanges", &exchanges)
+	modules.Register("k6/x/amqp/queue", &queues)
+	modules.Register("k6/x/amqp/exchange", &exchanges)
 }

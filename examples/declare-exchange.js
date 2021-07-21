@@ -1,5 +1,5 @@
 import Amqp from 'k6/x/amqp';
-import Exchanges from 'k6/x/amqp/exchanges';
+import Exchange from 'k6/x/amqp/exchange';
 
 export default function () {
   const url = "amqp://guest:guest@localhost:5672/"
@@ -11,7 +11,7 @@ export default function () {
 
   const exchangeName = 'K6 exchange'
 
-  Exchanges.declare({
+  Exchange.declare({
     name: exchangeName,
   	kind: 'direct',
     durable: false,

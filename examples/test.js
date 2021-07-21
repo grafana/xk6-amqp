@@ -1,5 +1,5 @@
 import Amqp from 'k6/x/amqp';
-import Queues from 'k6/x/amqp/queues';
+import Queue from 'k6/x/amqp/queue';
 
 export default function () {
   console.log("K6 amqp extension enabled, version: " + Amqp.version)
@@ -11,7 +11,7 @@ export default function () {
   
   const queueName = 'K6 general'
   
-  Queues.declare({
+  Queue.declare({
     name: queueName,
     // durable: false,
     // delete_when_unused: false,

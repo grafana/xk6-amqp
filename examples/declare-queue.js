@@ -1,5 +1,5 @@
 import Amqp from 'k6/x/amqp';
-import Queues from 'k6/x/amqp/queues';
+import Queue from 'k6/x/amqp/queue';
 
 export default function () {
   const url = "amqp://guest:guest@localhost:5672/"
@@ -9,7 +9,7 @@ export default function () {
   
   const queueName = 'K6 queue'
   
-  Queues.declare({
+  Queue.declare({
     name: queueName,
     durable: false,
     delete_when_unused: false,

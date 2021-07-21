@@ -1,5 +1,5 @@
 import Amqp from 'k6/x/amqp';
-import Queues from 'k6/x/amqp/queues';
+import Queue from 'k6/x/amqp/queue';
 
 export default function () {
   const url = "amqp://guest:guest@localhost:5672/"
@@ -8,7 +8,7 @@ export default function () {
   })
   
   const queueName = 'K6 queue'
-  const count = Queues.purge(queueName, false)
+  const count = Queue.purge(queueName, false)
 
   console.log(queueName + " purge: " + count + " messages deleted")
 }
