@@ -13,7 +13,7 @@ type ExchangeOptions struct {
 	ConnectionUrl string
 }
 
-type EchangeDeclareOptions struct {
+type ExchangeDeclareOptions struct {
 	Name       string
 	Kind       string
 	Durable    bool
@@ -39,7 +39,7 @@ type ExchangeUnindOptions struct {
 	Args                    amqpDriver.Table
 }
 
-func (exchanges *Exchanges) Declare(options EchangeDeclareOptions) error {
+func (exchanges *Exchanges) Declare(options ExchangeDeclareOptions) error {
 	ch, err := exchanges.Connection.Channel()
 	if err != nil {
 		return err
