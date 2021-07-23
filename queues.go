@@ -4,7 +4,7 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
-type Queues struct {
+type Queue struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
@@ -37,8 +37,8 @@ type QueueUnindOptions struct {
 	Args         amqpDriver.Table
 }
 
-func (queues *Queues) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
@@ -53,8 +53,8 @@ func (queues *Queues) Declare(options DeclareOptions) (amqpDriver.Queue, error) 
 	)
 }
 
-func (queues *Queues) Inspect(name string) (amqpDriver.Queue, error) {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
@@ -62,8 +62,8 @@ func (queues *Queues) Inspect(name string) (amqpDriver.Queue, error) {
 	return ch.QueueInspect(name)
 }
 
-func (queues *Queues) Delete(name string) error {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Delete(name string) error {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
@@ -77,8 +77,8 @@ func (queues *Queues) Delete(name string) error {
 	return err
 }
 
-func (queues *Queues) Bind(options QueueBindOptions) error {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Bind(options QueueBindOptions) error {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
@@ -92,8 +92,8 @@ func (queues *Queues) Bind(options QueueBindOptions) error {
 	)
 }
 
-func (queues *Queues) Unbind(options QueueUnindOptions) error {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Unbind(options QueueUnindOptions) error {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
@@ -106,8 +106,8 @@ func (queues *Queues) Unbind(options QueueUnindOptions) error {
 	)
 }
 
-func (queues *Queues) Purge(name string, noWait bool) (int, error) {
-	ch, err := queues.Connection.Channel()
+func (queue *Queue) Purge(name string, noWait bool) (int, error) {
+	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return 0, err
 	}

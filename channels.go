@@ -4,16 +4,16 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
-type Exchange struct {
+type Channels struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
 
-type ExchangeOptions struct {
+type ChannelOptions struct {
 	ConnectionUrl string
 }
 
-type ExchangeDeclareOptions struct {
+type ChannelDeclareOptions struct {
 	Name       string
 	Kind       string
 	Durable    bool
@@ -23,29 +23,29 @@ type ExchangeDeclareOptions struct {
 	Args       amqpDriver.Table
 }
 
-type ExchangeBindOptions struct {
-	DestinationExchangeName string
-	SourceExchangeName      string
+type ChannelBindOptions struct {
+	DestinationChannelName string
+	SourceChannelName      string
 	RoutingKey              string
 	NoWait                  bool
 	Args                    amqpDriver.Table
 }
 
-type ExchangeUnindOptions struct {
-	DestinationExchangeName string
-	SourceExchangeName      string
+type ChannelUnindOptions struct {
+	DestinationChannelName string
+	SourceChannelName      string
 	RoutingKey              string
 	NoWait                  bool
 	Args                    amqpDriver.Table
 }
 
-func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
-	ch, err := exchange.Connection.Channel()
+func (Channels *Channels) Declare(options ChannelDeclareOptions) error {
+	ch, err := Channels.Connection.Channel()
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
-	return ch.ExchangeDeclare(
+	return ch.ChannelDeclare(
 		options.Name,
 		options.Kind,
 		options.Durable,
@@ -56,44 +56,44 @@ func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
 	)
 }
 
-func (exchange *Exchange) Delete(name string) error {
-	ch, err := exchange.Connection.Channel()
+func (Channels *Channels) Delete(name string) error {
+	ch, err := Channels.Connection.Channel()
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
-	return ch.ExchangeDelete(
+	return ch.ChannelDelete(
 		name,
 		false, // ifUnused
 		false, // noWait
 	)
 }
 
-func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
-	ch, err := exchange.Connection.Channel()
+func (Channels *Channels) Bind(options ChannelBindOptions) error {
+	ch, err := Channels.Connection.Channel()
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
-	return ch.ExchangeBind(
-		options.DestinationExchangeName,
+	return ch.ChannelBind(
+		options.DestinationChannelName,
 		options.RoutingKey,
-		options.SourceExchangeName,
+		options.SourceChannelName,
 		options.NoWait,
 		options.Args,
 	)
 }
 
-func (exchange *Exchange) Unbind(options ExchangeUnindOptions) error {
-	ch, err := exchange.Connection.Channel()
+func (Channels *Channels) Unbind(options ChannelUnindOptions) error {
+	ch, err := Channels.Connection.Channel()
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
-	return ch.ExchangeUnbind(
-		options.DestinationExchangeName,
+	return ch.ChannelUnbind(
+		options.DestinationChannelName,
 		options.RoutingKey,
-		options.SourceExchangeName,
+		options.SourceChannelName,
 		options.NoWait,
 		options.Args,
 	)
