@@ -8,11 +8,41 @@ import (
 const version = "v0.0.1"
 
 type Amqp struct {
+	modules.InstanceCore
+
 	Version    string
 	Connection *amqpDriver.Connection
-	Queue     *Queue
-	Exchange  *Exchange
+	Queue      *Queue
+	Exchange   *Exchange
 }
+
+type AmqpRoot struct {
+	Queue    *Queue
+	Exchange *Exchange
+}
+
+func (amqp *AmqpRoot) NewModuleInstance(core modules.InstanceCore) modules.Instance {
+	return &Amqp{
+		InstanceCore: core,
+		Version:      version,
+		Queue:        amqp.Queue,
+		Exchange:     amqp.Exchange,
+	}
+}
+
+// GetExports returns the exports of the metrics module
+func (amqp *Amqp) GetExports() modules.Exports {
+	return modules.Exports{
+		Named: map[string]interface{}{
+			"start":   amqp.Start,
+			"listen":  amqp.Listen,
+			"publish": amqp.Publish,
+			"version": amqp.Version,
+		},
+	}
+}
+
+var _ modules.IsModuleV2 = &AmqpRoot{}
 
 type AmqpOptions struct {
 	ConnectionUrl string
@@ -57,6 +87,8 @@ func (amqp *Amqp) Start(options AmqpOptions) error {
 }
 
 func (amqp *Amqp) Publish(options PublishOptions) error {
+	amqp.YieldRuntime()
+	defer amqp.GetRuntime()
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
 		return err
@@ -76,6 +108,8 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 }
 
 func (amqp *Amqp) Listen(options ListenOptions) error {
+	amqp.YieldRuntime()
+	defer amqp.GetRuntime()
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
 		return err
@@ -97,23 +131,20 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 
 	go func() {
 		for d := range msgs {
-			options.Listener(string(d.Body))
+			func() { // so we can use a defer in the loop
+				_, ret := amqp.GetRuntimeWithReturn()
+				defer ret()
+				options.Listener(string(d.Body))
+			}()
 		}
 	}()
 	return nil
 }
 
 func init() {
-
-	queue := Queue{}
-	exchange := Exchange{}
-	generalAmqp := Amqp{
-		Version:   version,
-		Queue:    &queue,
-		Exchange: &exchange,
-	}
-
-	modules.Register("k6/x/amqp", &generalAmqp)
-	modules.Register("k6/x/amqp/queue", &queue)
-	modules.Register("k6/x/amqp/exchange", &exchange)
+	queue := &Queue{}
+	exchange := &Exchange{}
+	modules.Register("k6/x/amqp", &AmqpRoot{Queue: queue, Exchange: exchange})
+	modules.Register("k6/x/amqp/queue", queue)
+	modules.Register("k6/x/amqp/exchange", exchange)
 }
