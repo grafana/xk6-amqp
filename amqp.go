@@ -1,6 +1,10 @@
 package amqp
 
 import (
+	"fmt"
+	"sync"
+
+	"github.com/dop251/goja"
 	amqpDriver "github.com/streadway/amqp"
 	"go.k6.io/k6/js/modules"
 )
@@ -86,35 +90,40 @@ func (amqp *Amqp) Start(options AmqpOptions) error {
 	return err
 }
 
-func (amqp *Amqp) Publish(options PublishOptions) error {
-	amqp.YieldRuntime()
-	defer amqp.GetRuntime()
+func (amqp *Amqp) Publish(options PublishOptions) (*goja.Promise, error) {
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ch.Close()
-
-	return ch.Publish(
-		options.Exchange,
-		options.QueueName,
-		options.Mandatory,
-		options.Immediate,
-		amqpDriver.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(options.Body),
-		},
-	)
+	p, resolve, reject := amqp.MakeHandledPromise()
+	go func() {
+		defer ch.Close()
+		err := ch.Publish(
+			options.Exchange,
+			options.QueueName,
+			options.Mandatory,
+			options.Immediate,
+			amqpDriver.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(options.Body),
+			},
+		)
+		if err != nil {
+			fmt.Println("reject err", err)
+			reject(err)
+		} else {
+			fmt.Println("resolve")
+			resolve(nil)
+		}
+	}()
+	return p, nil
 }
 
-func (amqp *Amqp) Listen(options ListenOptions) error {
-	amqp.YieldRuntime()
-	defer amqp.GetRuntime()
+func (amqp *Amqp) Listen(options ListenOptions) (*goja.Object, error) {
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer ch.Close()
 
 	msgs, err := ch.Consume(
 		options.QueueName,
@@ -126,19 +135,36 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 		options.Args,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	_, resolve, _ := amqp.MakeHandledPromise() // we only care that the loop won't let the iteration end here
+	rt := amqp.GetRuntime()
+	stop := make(chan struct{})
+	o := rt.NewObject()
+	o.Set("stop", func() {
+		stop <- struct{}{}
+		<-stop
+	})
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		<-stop
+		ch.Close()
+		wg.Wait()
+		resolve(nil) // we release the loop to end the iteration
+		close(stop)
+	}()
+
+	go func() {
+		defer wg.Done()
 		for d := range msgs {
-			func() { // so we can use a defer in the loop
-				_, ret := amqp.GetRuntimeWithReturn()
-				defer ret()
-				options.Listener(string(d.Body))
-			}()
+			amqp.AddToEventLoop(func() { options.Listener(string(d.Body)) })
 		}
 	}()
-	return nil
+
+	return o, nil
 }
 
 func init() {

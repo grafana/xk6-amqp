@@ -23,25 +23,38 @@ export default function () {
 
 	console.log(queueName + " queue is ready")
 
-	Amqp.publish({
-		queue_name: queueName,
-		body: "Ping from k6 vu: " + __VU + ", iter:"+ __ITER,
-		// exchange: '',
-		// mandatory: false,
-		// immediate: false,
-	})
 
-	const listener = function(data) { console.log(`received data by VU ${__VU}, ITER ${__ITER}: ${data} `)}
-	Amqp.listen({
+	var o;
+	var i = 0;
+	const listener = function(data) { 
+		console.log(`received data by VU ${__VU}, ITER ${__ITER}: ${data} `)
+		i++
+		if (i == 2) {
+			console.log("stopping")
+			o.stop() // stop on the  second message
+		}
+	}
+
+	o = Amqp.listen({
 		queue_name: queueName,
 		listener: listener,
 		auto_ack: true,
-		// consumer: '',
-		// exclusive: false,
-		// no_local: false,
-		// no_wait: false,
-		// args: null
 	})
 
-	sleep(2);
+
+	var p = Amqp.publish({
+		queue_name: queueName,
+		body: "Ping from k6 vu: " + __VU + ", iter:"+ __ITER,
+	})
+
+	p.then(() => {
+		console.log("then resolved")
+		sleep(2)
+				Amqp.publish({
+			queue_name: queueName,
+			body: "Second ping from k6 vu: " + __VU + ", iter:"+ __ITER,
+		}).then(() => {console.log("second send resolved")})
+	}, (e) => {
+				console.log("reject" + e);
+	})
 }
