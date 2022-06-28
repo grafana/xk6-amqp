@@ -24,7 +24,8 @@ export default function () {
 
   Amqp.publish({
     queue_name: queueName,
-    body: "Ping from k6"
+    body: "Ping from k6",
+    content_type: "text/plain"
     // exchange: '',
     // mandatory: false,
     // immediate: false,

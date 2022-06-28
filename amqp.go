@@ -22,6 +22,7 @@ type PublishOptions struct {
 	QueueName string
 	Body      string
 	Exchange  string
+	ContentType string
 	Mandatory bool
 	Immediate bool
 }
@@ -69,7 +70,7 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 		options.Mandatory,
 		options.Immediate,
 		amqpDriver.Publishing{
-			ContentType: "text/plain",
+			ContentType: options.ContentType,
 			Body:        []byte(options.Body),
 		},
 	)

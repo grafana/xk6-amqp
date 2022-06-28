@@ -27,6 +27,7 @@ export default function () {
       exchange: '',
       mandatory: false,
       immediate: false,
+      content_type: "text/plain",
       body: "Ping from k6 -> " + mark
     })
   }
