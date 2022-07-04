@@ -10,8 +10,8 @@ const version = "v0.0.1"
 type Amqp struct {
 	Version    string
 	Connection *amqpDriver.Connection
-	Queue     *Queue
-	Exchange  *Exchange
+	Queue      *Queue
+	Exchange   *Exchange
 }
 
 type AmqpOptions struct {
@@ -19,13 +19,13 @@ type AmqpOptions struct {
 }
 
 type PublishOptions struct {
-	QueueName string
-	Body      string
-	Exchange  string
+	QueueName   string
+	Body        string
+	Exchange    string
 	ContentType string
-	Mandatory bool
-	Immediate bool
-	Persistent bool
+	Mandatory   bool
+	Immediate   bool
+	Persistent  bool
 }
 
 type ConsumeOptions struct {
@@ -116,7 +116,7 @@ func init() {
 	queue := Queue{}
 	exchange := Exchange{}
 	generalAmqp := Amqp{
-		Version:   version,
+		Version:  version,
 		Queue:    &queue,
 		Exchange: &exchange,
 	}
