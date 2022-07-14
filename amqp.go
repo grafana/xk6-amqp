@@ -71,7 +71,7 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 	}
 
 	if options.Persistent {
-		publishing.DeliveryMode = 2
+		publishing.DeliveryMode = amqpDriver.Persistent
 	}
 
 	return ch.Publish(
