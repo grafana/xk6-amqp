@@ -1,4 +1,4 @@
-# v1.43.0
+# v1.47.2
 # Please don't remove the first line. It is used in CI to determine the golangci version
 run:
   deadline: 5m
@@ -52,7 +52,10 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - decorder
+    - execinquery
     - exhaustivestruct
+    - exhaustruct
     - gci
     - gochecknoinits
     - gocyclo # replaced by cyclop since it also calculates the package complexity
@@ -63,15 +66,19 @@ linters:
     - golint # this linter is deprecated
     - gomnd
     - gomodguard
+    - grouper
     - interfacer # deprecated
     - ireturn
+    - maintidx
     - maligned # replaced by govet 'fieldalignment'
     - nlreturn
+    - nonamedreturns
+    - nosnakecase
     - scopelint # deprecated, replaced by exportloopref
     - tagliatelle
     - testpackage
     - thelper
-    - varnamelen # disabled before the final decision in (https://github.com/grafana/k6/pull/2323)
+    - varnamelen
     - wrapcheck # a little bit too much for k6, maybe after https://github.com/tomarrell/wrapcheck/issues/2 is fixed
     - wsl
   fast: false
