@@ -1,3 +1,4 @@
+// Package amqp contains AMQP API for a remote server.
 package amqp
 
 import (
@@ -5,19 +6,22 @@ import (
 	"go.k6.io/k6/js/modules"
 )
 
-const version = "v0.0.1"
+const version = "v0.1.0"
 
-type Amqp struct {
+// AMQP type holds connection to a remote AMQP server.
+type AMQP struct {
 	Version    string
 	Connection *amqpDriver.Connection
 	Queue      *Queue
 	Exchange   *Exchange
 }
 
-type AmqpOptions struct {
-	ConnectionUrl string
+// Options defines configuration options for an AMQP session.
+type Options struct {
+	ConnectionURL string
 }
 
+// PublishOptions defines a message payload with delivery options.
 type PublishOptions struct {
 	QueueName   string
 	Body        string
@@ -28,6 +32,7 @@ type PublishOptions struct {
 	Persistent  bool
 }
 
+// ConsumeOptions defines options for use when consuming a message.
 type ConsumeOptions struct {
 	Consumer  string
 	AutoAck   bool
@@ -37,8 +42,10 @@ type ConsumeOptions struct {
 	Args      amqpDriver.Table
 }
 
+// ListenerType is the message handler implemented within JavaScript.
 type ListenerType func(string) error
 
+// ListenOptions defines options for subscribing to message(s) within a queue.
 type ListenOptions struct {
 	Listener  ListenerType
 	QueueName string
@@ -50,20 +57,24 @@ type ListenOptions struct {
 	Args      amqpDriver.Table
 }
 
-func (amqp *Amqp) Start(options AmqpOptions) error {
-	conn, err := amqpDriver.Dial(options.ConnectionUrl)
+// Start establishes a session with an AMQP server given the provided options.
+func (amqp *AMQP) Start(options Options) error {
+	conn, err := amqpDriver.Dial(options.ConnectionURL)
 	amqp.Connection = conn
 	amqp.Queue.Connection = conn
 	amqp.Exchange.Connection = conn
 	return err
 }
 
-func (amqp *Amqp) Publish(options PublishOptions) error {
+// Publish delivers the payload using options provided.
+func (amqp *AMQP) Publish(options PublishOptions) error {
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 
 	publishing := amqpDriver.Publishing{
 		ContentType: options.ContentType,
@@ -83,12 +94,15 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 	)
 }
 
-func (amqp *Amqp) Listen(options ListenOptions) error {
+// Listen binds to an AMQP queue in order to receive message(s) as they are received.
+func (amqp *AMQP) Listen(options ListenOptions) error {
 	ch, err := amqp.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 
 	msgs, err := ch.Consume(
 		options.QueueName,
@@ -105,23 +119,22 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 
 	go func() {
 		for d := range msgs {
-			options.Listener(string(d.Body))
+			err = options.Listener(string(d.Body))
 		}
 	}()
-	return nil
+	return err
 }
 
 func init() {
-
 	queue := Queue{}
 	exchange := Exchange{}
-	generalAmqp := Amqp{
+	generalAMQP := AMQP{
 		Version:  version,
 		Queue:    &queue,
 		Exchange: &exchange,
 	}
 
-	modules.Register("k6/x/amqp", &generalAmqp)
+	modules.Register("k6/x/amqp", &generalAMQP)
 	modules.Register("k6/x/amqp/queue", &queue)
 	modules.Register("k6/x/amqp/exchange", &exchange)
 }
