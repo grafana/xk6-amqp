@@ -4,15 +4,8 @@
 > It may also break in the future as xk6 evolves. USE AT YOUR OWN RISK!
 > Any issues with the tool should be raised [here](https://github.com/grafana/xk6-amqp/issues).
 
-</br>
-</br>
-
-<div align="center">
-
 # xk6-amqp
-AMQP xk6 plugin. Built for [k6](https://go.k6.io/k6) using [xk6](https://github.com/grafana/xk6).
-
-</div>
+A k6 extension for publishing and consuming of messages [AMQP](https://www.amqp.org/) queues and exchanges.
 
 ## Build
 
@@ -23,23 +16,23 @@ To build a `k6` binary with this extension, first ensure you have the prerequisi
 
 Then:
 
-1. Download `xk6`:
+1. Download [xk6](https://github.com/grafana/xk6):
   ```bash
   $ go install go.k6.io/xk6/cmd/xk6@latest
   ```
 
-2. Build the binary:
+2. [Build the k6 binary](https://github.com/grafana/xk6#command-usage):
   ```bash
   $ xk6 build --with github.com/grafana/xk6-amqp@latest
   ```
 ## Development
+To make development a little smoother, use the `Makefile` in the root folder. The default target will format your code, run tests, and create a `k6` binary with your local code rather than from GitHub.
 
-To make development a little smoother, you may run the build script provided in the root folder. It will create a k6 binary with your local code rather than from GitHub.
-
-```bash
-$ ./build.sh && ./k6 run my-test-script.js
+```shell
+git clone git@github.com:grafana/xk6-amqp.git
+cd xk6-amqp
+make
 ```
-
 
 ## Example
 

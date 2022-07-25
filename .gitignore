@@ -1,1 +1,8 @@
+k6
+k6.exe
+
+.DS_Store
+.idea
+.vscode
+
 vendor
