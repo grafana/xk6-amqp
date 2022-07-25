@@ -4,15 +4,18 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
+// Exchange defines a connection to publish/subscribe destinations.
 type Exchange struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
 
+// ExchangeOptions defines configuration settings for accessing an exchange.
 type ExchangeOptions struct {
-	ConnectionUrl string
+	ConnectionURL string
 }
 
+// ExchangeDeclareOptions provides options when declaring (creating) an exchange.
 type ExchangeDeclareOptions struct {
 	Name       string
 	Kind       string
@@ -23,6 +26,7 @@ type ExchangeDeclareOptions struct {
 	Args       amqpDriver.Table
 }
 
+// ExchangeBindOptions provides options when binding (subscribing) one exchange to another.
 type ExchangeBindOptions struct {
 	DestinationExchangeName string
 	SourceExchangeName      string
@@ -31,7 +35,8 @@ type ExchangeBindOptions struct {
 	Args                    amqpDriver.Table
 }
 
-type ExchangeUnindOptions struct {
+// ExchangeUnbindOptions provides options when unbinding (unsubscribing) one exchange from another.
+type ExchangeUnbindOptions struct {
 	DestinationExchangeName string
 	SourceExchangeName      string
 	RoutingKey              string
@@ -39,12 +44,15 @@ type ExchangeUnindOptions struct {
 	Args                    amqpDriver.Table
 }
 
+// Declare creates a new exchange given the provided options.
 func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.ExchangeDeclare(
 		options.Name,
 		options.Kind,
@@ -56,12 +64,15 @@ func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
 	)
 }
 
+// Delete removes an exchange from the remote server given the exchange name.
 func (exchange *Exchange) Delete(name string) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.ExchangeDelete(
 		name,
 		false, // ifUnused
@@ -69,12 +80,15 @@ func (exchange *Exchange) Delete(name string) error {
 	)
 }
 
+// Bind subscribes one exchange to another.
 func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.ExchangeBind(
 		options.DestinationExchangeName,
 		options.RoutingKey,
@@ -84,12 +98,15 @@ func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
 	)
 }
 
-func (exchange *Exchange) Unbind(options ExchangeUnindOptions) error {
+// Unbind removes a subscription from one exchange to another.
+func (exchange *Exchange) Unbind(options ExchangeUnbindOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.ExchangeUnbind(
 		options.DestinationExchangeName,
 		options.RoutingKey,

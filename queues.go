@@ -4,15 +4,18 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
+// Queue defines a connection to a point-to-point destination.
 type Queue struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
 
+// QueueOptions defines configuration settings for accessing a queue.
 type QueueOptions struct {
-	ConnectionUrl string
+	ConnectionURL string
 }
 
+// DeclareOptions provides queue options when declaring (creating) a queue.
 type DeclareOptions struct {
 	Name             string
 	Durable          bool
@@ -22,6 +25,7 @@ type DeclareOptions struct {
 	Args             amqpDriver.Table
 }
 
+// QueueBindOptions provides options when binding a queue to an exchange in order to receive message(s).
 type QueueBindOptions struct {
 	QueueName    string
 	ExchangeName string
@@ -30,19 +34,23 @@ type QueueBindOptions struct {
 	Args         amqpDriver.Table
 }
 
-type QueueUnindOptions struct {
+// QueueUnbindOptions provides options when unbinding a queue from an exchange to stop receiving message(s).
+type QueueUnbindOptions struct {
 	QueueName    string
 	ExchangeName string
 	RoutingKey   string
 	Args         amqpDriver.Table
 }
 
+// Declare creates a new queue given the provided options.
 func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.QueueDeclare(
 		options.Name,
 		options.Durable,
@@ -53,21 +61,27 @@ func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 	)
 }
 
+// Inspect provides queue metadata given queue name.
 func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.QueueInspect(name)
 }
 
+// Delete removes a queue from the remote server given the queue name.
 func (queue *Queue) Delete(name string) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	_, err = ch.QueueDelete(
 		name,
 		false, // ifUnused
@@ -77,12 +91,15 @@ func (queue *Queue) Delete(name string) error {
 	return err
 }
 
+// Bind subscribes a queue to an exchange in order to receive message(s).
 func (queue *Queue) Bind(options QueueBindOptions) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.QueueBind(
 		options.QueueName,
 		options.RoutingKey,
@@ -92,12 +109,15 @@ func (queue *Queue) Bind(options QueueBindOptions) error {
 	)
 }
 
-func (queue *Queue) Unbind(options QueueUnindOptions) error {
+// Unbind removes a queue subscription from an exchange to discontinue receiving message(s).
+func (queue *Queue) Unbind(options QueueUnbindOptions) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.QueueUnbind(
 		options.QueueName,
 		options.RoutingKey,
@@ -106,11 +126,14 @@ func (queue *Queue) Unbind(options QueueUnindOptions) error {
 	)
 }
 
+// Purge removes all non-consumed message(s) from the specified queue.
 func (queue *Queue) Purge(name string, noWait bool) (int, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return 0, err
 	}
-	defer ch.Close()
+	defer func() {
+		_ = ch.Close()
+	}()
 	return ch.QueuePurge(name, noWait)
 }
