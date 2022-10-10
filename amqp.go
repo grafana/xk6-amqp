@@ -4,6 +4,7 @@ package amqp
 import (
 	amqpDriver "github.com/streadway/amqp"
 	"go.k6.io/k6/js/modules"
+	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 const version = "v0.1.0"
@@ -30,6 +31,7 @@ type PublishOptions struct {
 	Mandatory   bool
 	Immediate   bool
 	Persistent  bool
+	CypherMethod string
 }
 
 // ConsumeOptions defines options for use when consuming a message.
@@ -76,9 +78,17 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 		_ = ch.Close()
 	}()
 
+  if options.CypherMethod == "messagepack" {
+    cypherBody, err := msgpack.Marshal(options.Body)
+  }
+
+  if err != nil {
+    panic(err)
+  }
+
 	publishing := amqpDriver.Publishing{
 		ContentType: options.ContentType,
-		Body:        []byte(options.Body),
+		Body:        []byte(cypherBody),
 	}
 
 	if options.Persistent {
