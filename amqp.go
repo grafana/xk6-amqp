@@ -2,9 +2,9 @@
 package amqp
 
 import (
+	"github.com/izinin/json2msgpack"
 	amqpDriver "github.com/streadway/amqp"
 	"go.k6.io/k6/js/modules"
-	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 const version = "v0.1.0"
@@ -31,7 +31,6 @@ type PublishOptions struct {
 	Mandatory   bool
 	Immediate   bool
 	Persistent  bool
-	CypherMethod string
 }
 
 // ConsumeOptions defines options for use when consuming a message.
@@ -59,6 +58,8 @@ type ListenOptions struct {
 	Args      amqpDriver.Table
 }
 
+const messagepack = "application/x-msgpack"
+
 // Start establishes a session with an AMQP server given the provided options.
 func (amqp *AMQP) Start(options Options) error {
 	conn, err := amqpDriver.Dial(options.ConnectionURL)
@@ -78,17 +79,14 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 		_ = ch.Close()
 	}()
 
-  if options.CypherMethod == "messagepack" {
-    cypherBody, err := msgpack.Marshal(options.Body)
-  }
-
-  if err != nil {
-    panic(err)
-  }
-
 	publishing := amqpDriver.Publishing{
 		ContentType: options.ContentType,
-		Body:        []byte(cypherBody),
+	}
+
+	if options.ContentType == messagepack {
+		publishing.Body = json2msgpack.EncodeJSON([]byte(options.Body))
+	} else {
+		publishing.Body = []byte(options.Body)
 	}
 
 	if options.Persistent {
