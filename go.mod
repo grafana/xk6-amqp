@@ -1,4 +1,4 @@
-module github.com/PabloDelBarrioArnanz/xk6-amqp-messagepack-cypher
+module github.com/grafana/xk6-amqp
 
 go 1.15
 
