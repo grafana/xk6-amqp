@@ -2,9 +2,9 @@
 package amqp
 
 import (
-	"github.com/izinin/json2msgpack"
 	amqpDriver "github.com/streadway/amqp"
-	"go.k6.io/k6/js/modules"
+  "github.com/izinin/json2msgpack"
+  "go.k6.io/k6/js/modules"
 )
 
 const version = "v0.1.0"
