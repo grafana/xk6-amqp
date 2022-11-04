@@ -68,6 +68,9 @@ export default function () {
     // exchange: '',
     // mandatory: false,
     // immediate: false,
+    // headers: {
+    //   'header-1': '',
+    // },
   })
 
   const listener = function(data) { console.log('received data: ' + data) }

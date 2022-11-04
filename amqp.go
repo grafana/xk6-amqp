@@ -25,6 +25,7 @@ type Options struct {
 type PublishOptions struct {
 	QueueName   string
 	Body        string
+	Headers     amqpDriver.Table
 	Exchange    string
 	ContentType string
 	Mandatory   bool
@@ -77,6 +78,7 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 	}()
 
 	publishing := amqpDriver.Publishing{
+		Headers:     options.Headers,
 		ContentType: options.ContentType,
 		Body:        []byte(options.Body),
 	}
