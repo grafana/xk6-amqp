@@ -2,8 +2,10 @@
 package amqp
 
 import (
-	"github.com/izinin/json2msgpack"
+	"encoding/json"
+
 	amqpDriver "github.com/streadway/amqp"
+	"github.com/vmihailenco/msgpack/v5"
 	"go.k6.io/k6/js/modules"
 )
 
@@ -84,7 +86,17 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 	}
 
 	if options.ContentType == messagepack {
-		publishing.Body = json2msgpack.EncodeJSON([]byte(options.Body))
+		var jsonParsedBody interface{}
+		json.Unmarshal([]byte(options.Body), &jsonParsedBody)
+
+		if err := json.Unmarshal([]byte(options.Body), &jsonParsedBody); err != nil {
+			return err
+		}
+
+		publishing.Body, err = msgpack.Marshal(jsonParsedBody)
+		if err != nil {
+			return err
+		}
 	} else {
 		publishing.Body = []byte(options.Body)
 	}
