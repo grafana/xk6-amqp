@@ -87,7 +87,6 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 
 	if options.ContentType == messagepack {
 		var jsonParsedBody interface{}
-		json.Unmarshal([]byte(options.Body), &jsonParsedBody)
 
 		if err := json.Unmarshal([]byte(options.Body), &jsonParsedBody); err != nil {
 			return err
