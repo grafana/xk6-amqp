@@ -2,7 +2,10 @@
 package amqp
 
 import (
+	"encoding/json"
+
 	amqpDriver "github.com/streadway/amqp"
+	"github.com/vmihailenco/msgpack/v5"
 	"go.k6.io/k6/js/modules"
 )
 
@@ -58,6 +61,8 @@ type ListenOptions struct {
 	Args      amqpDriver.Table
 }
 
+const messagepack = "application/x-msgpack"
+
 // Start establishes a session with an AMQP server given the provided options.
 func (amqp *AMQP) Start(options Options) error {
 	conn, err := amqpDriver.Dial(options.ConnectionURL)
@@ -80,7 +85,21 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 	publishing := amqpDriver.Publishing{
 		Headers:     options.Headers,
 		ContentType: options.ContentType,
-		Body:        []byte(options.Body),
+	}
+
+	if options.ContentType == messagepack {
+		var jsonParsedBody interface{}
+
+		if err = json.Unmarshal([]byte(options.Body), &jsonParsedBody); err != nil {
+			return err
+		}
+
+		publishing.Body, err = msgpack.Marshal(jsonParsedBody)
+		if err != nil {
+			return err
+		}
+	} else {
+		publishing.Body = []byte(options.Body)
 	}
 
 	if options.Persistent {
