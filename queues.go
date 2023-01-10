@@ -1,7 +1,7 @@
 package amqp
 
 import (
-	amqpDriver "github.com/streadway/amqp"
+	amqpDriver "github.com/rabbitmq/amqp091-go"
 )
 
 // Queue defines a connection to a point-to-point destination.

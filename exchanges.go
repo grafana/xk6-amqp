@@ -1,7 +1,7 @@
 package amqp
 
 import (
-	amqpDriver "github.com/streadway/amqp"
+	amqpDriver "github.com/rabbitmq/amqp091-go"
 )
 
 // Exchange defines a connection to publish/subscribe destinations.
