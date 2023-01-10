@@ -1,11 +1,10 @@
-> ### ⚠️ This is a proof of concept
->
-> As this is a proof of concept,  it won't be supported by the k6 team.
-> It may also break in the future as xk6 evolves. USE AT YOUR OWN RISK!
-> Any issues with the tool should be raised [here](https://github.com/grafana/xk6-amqp/issues).
-
 # xk6-amqp
-A k6 extension for publishing and consuming of messages [AMQP](https://www.amqp.org/) queues and exchanges.
+
+A k6 extension for publishing and consuming messages from queues and exchanges. 
+This project utilizes [AMQP 0.9.1](https://www.rabbitmq.com/tutorials/amqp-concepts.html), the most common AMQP protocol in use today.
+
+> :warning: This project is not compatible with [AMQP 1.0](http://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-overview-v1.0-os.html).
+> A list of AMQP 1.0 brokers and other AMQP 1.0 resources may be found at [github.com/xinchen10/awesome-amqp](https://github.com/xinchen10/awesome-amqp).
 
 ## Build
 
@@ -25,6 +24,7 @@ Then:
   ```bash
   $ xk6 build --with github.com/grafana/xk6-amqp@latest
   ```
+
 ## Development
 To make development a little smoother, use the `Makefile` in the root folder. The default target will format your code, run tests, and create a `k6` binary with your local code rather than from GitHub.
 
