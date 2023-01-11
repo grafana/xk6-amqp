@@ -108,7 +108,7 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 	}
 
 	return ch.PublishWithContext(
-		context.Background(),
+		context.Background(), // TODO: use vu context
 		options.Exchange,
 		options.QueueName,
 		options.Mandatory,
