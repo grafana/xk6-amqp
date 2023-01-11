@@ -2,14 +2,15 @@
 package amqp
 
 import (
+	"context"
 	"encoding/json"
 
-	amqpDriver "github.com/streadway/amqp"
+	amqpDriver "github.com/rabbitmq/amqp091-go"
 	"github.com/vmihailenco/msgpack/v5"
 	"go.k6.io/k6/js/modules"
 )
 
-const version = "v0.1.0"
+const version = "v0.3.0"
 
 // AMQP type holds connection to a remote AMQP server.
 type AMQP struct {
@@ -106,7 +107,8 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 		publishing.DeliveryMode = amqpDriver.Persistent
 	}
 
-	return ch.Publish(
+	return ch.PublishWithContext(
+		context.Background(), // TODO: use vu context
 		options.Exchange,
 		options.QueueName,
 		options.Mandatory,
