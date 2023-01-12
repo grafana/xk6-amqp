@@ -54,13 +54,13 @@ func (r *RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
 func (amqp *AMQP) Exports() modules.Exports {
 	return modules.Exports{
 		Named: map[string]interface{}{
-			//"Amqp":     amqp,
-			//"Exchange": amqp.Exchange,
-			//"Queue":    amqp.Queue,
-			"version": amqp.Version,
-			"start":   amqp.Start,
-			"publish": amqp.Publish,
-			"listen":  amqp.Listen,
+			"Amqp":     amqp,
+			"Exchange": amqp.Exchange,
+			"Queue":    amqp.Queue,
+			"version":  amqp.Version,
+			"start":    amqp.Start,
+			"publish":  amqp.Publish,
+			"listen":   amqp.Listen,
 		},
 	}
 }
