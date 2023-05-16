@@ -40,7 +40,7 @@ type PublishOptions struct {
 	ReplyTo       string
 	Expiration    string
 	MessageId     string
-	Timestamp     int64
+	Timestamp     int64 // unix epoch timestamp in seconds
 	Type          string
 	UserId        string
 	AppId         string
@@ -118,7 +118,7 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 
 	// Well, I guess 1970-01-01 isn't allowed now.
 	if options.Timestamp != 0 {
-	  publishing.Timestamp = time.Unix(options.Timestamp, 0)
+		publishing.Timestamp = time.Unix(options.Timestamp, 0)
 	}
 
 	publishing.CorrelationId = options.CorrelationId
