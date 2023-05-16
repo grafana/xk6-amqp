@@ -4,6 +4,7 @@ package amqp
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	amqpDriver "github.com/rabbitmq/amqp091-go"
 	"github.com/vmihailenco/msgpack/v5"
@@ -27,14 +28,22 @@ type Options struct {
 
 // PublishOptions defines a message payload with delivery options.
 type PublishOptions struct {
-	QueueName   string
-	Body        string
-	Headers     amqpDriver.Table
-	Exchange    string
-	ContentType string
-	Mandatory   bool
-	Immediate   bool
-	Persistent  bool
+	QueueName     string
+	Body          string
+	Headers       amqpDriver.Table
+	Exchange      string
+	ContentType   string
+	Mandatory     bool
+	Immediate     bool
+	Persistent    bool
+	CorrelationId string
+	ReplyTo       string
+	Expiration    string
+	MessageId     string
+	Timestamp     int64
+	Type          string
+	UserId        string
+	AppId         string
 }
 
 // ConsumeOptions defines options for use when consuming a message.
@@ -106,6 +115,19 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 	if options.Persistent {
 		publishing.DeliveryMode = amqpDriver.Persistent
 	}
+
+	// Well, I guess 1970-01-01 isn't allowed now.
+	if options.Timestamp != 0 {
+	  publishing.Timestamp = time.Unix(options.Timestamp, 0)
+	}
+
+	publishing.CorrelationId = options.CorrelationId
+	publishing.ReplyTo = options.ReplyTo
+	publishing.Expiration = options.Expiration
+	publishing.MessageId = options.MessageId
+	publishing.Type = options.Type
+	publishing.UserId = options.UserId
+	publishing.AppId = options.AppId
 
 	return ch.PublishWithContext(
 		context.Background(), // TODO: use vu context
