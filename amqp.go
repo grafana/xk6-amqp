@@ -4,6 +4,7 @@ package amqp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	amqpDriver "github.com/rabbitmq/amqp091-go"
 	"github.com/vmihailenco/msgpack/v5"
@@ -123,9 +124,6 @@ func (amqp *AMQP) Listen(options ListenOptions) error {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = ch.Close()
-	}()
 
 	msgs, err := ch.Consume(
 		options.QueueName,
@@ -141,8 +139,16 @@ func (amqp *AMQP) Listen(options ListenOptions) error {
 	}
 
 	go func() {
-		for d := range msgs {
-			err = options.Listener(string(d.Body))
+		for {
+			select {
+			case m := <-msgs:
+				if len(m.Body) != 0 {
+					err = options.Listener((string(m.Body)))
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+			}
 		}
 	}()
 	return err
