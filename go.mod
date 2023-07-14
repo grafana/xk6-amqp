@@ -1,6 +1,6 @@
 module github.com/grafana/xk6-amqp
 
-go 1.19
+go 1.18
 
 require (
 	github.com/rabbitmq/amqp091-go v1.5.0
