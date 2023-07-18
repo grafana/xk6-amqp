@@ -1,6 +1,6 @@
 # xk6-amqp
 
-A k6 extension for publishing and consuming messages from queues and exchanges. 
+A k6 extension for publishing and consuming messages from queues and exchanges.
 This project utilizes [AMQP 0.9.1](https://www.rabbitmq.com/tutorials/amqp-concepts.html), the most common AMQP protocol in use today.
 
 > :warning: This project is not compatible with [AMQP 1.0](http://docs.oasis-open.org/amqp/core/v1.0/os/amqp-core-overview-v1.0-os.html).
@@ -47,9 +47,9 @@ export default function () {
     connection_url: url
   })
   console.log("Connection opened: " + url)
-  
+
   const queueName = 'K6 general'
-  
+
   Queue.declare({
     name: queueName,
     // durable: false,
@@ -65,6 +65,7 @@ export default function () {
     queue_name: queueName,
     body: "Ping from k6",
     content_type: "text/plain"
+    // timestamp: Math.round(Date.now() / 1000)
     // exchange: '',
     // mandatory: false,
     // immediate: false,
@@ -93,10 +94,10 @@ Result output:
 ```plain
 $ ./k6 run script.js
 
-          /\      |‾‾| /‾‾/   /‾‾/   
-     /\  /  \     |  |/  /   /  /    
-    /  \/    \    |     (   /   ‾‾\  
-   /          \   |  |\  \ |  (‾)  | 
+          /\      |‾‾| /‾‾/   /‾‾/
+     /\  /  \     |  |/  /   /  /
+    /  \/    \    |     (   /   ‾‾\
+   /          \   |  |\  \ |  (‾)  |
   / __________ \  |__| \__\ \_____/ .io
 
   execution: local
