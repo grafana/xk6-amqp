@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"fmt"
+
 	amqpDriver "github.com/rabbitmq/amqp091-go"
 )
 
@@ -9,7 +10,7 @@ import (
 type Exchange struct {
 	Version     string
 	Connections *map[int]*amqpDriver.Connection
-	MaxConnId   *int
+	MaxConnID   *int
 }
 
 // ExchangeOptions defines configuration settings for accessing an exchange.
@@ -19,7 +20,7 @@ type ExchangeOptions struct {
 
 // ExchangeDeclareOptions provides options when declaring (creating) an exchange.
 type ExchangeDeclareOptions struct {
-	ConnectionId int
+	ConnectionID int
 	Name         string
 	Kind         string
 	Durable      bool
@@ -31,12 +32,12 @@ type ExchangeDeclareOptions struct {
 
 // ExchangeDeleteOptions provides options when deleting an exchange.
 type ExchangeDeleteOptions struct {
-	ConnectionId int
+	ConnectionID int
 }
 
 // ExchangeBindOptions provides options when binding (subscribing) one exchange to another.
 type ExchangeBindOptions struct {
-	ConnectionId            int
+	ConnectionID            int
 	DestinationExchangeName string
 	SourceExchangeName      string
 	RoutingKey              string
@@ -46,7 +47,7 @@ type ExchangeBindOptions struct {
 
 // ExchangeUnbindOptions provides options when unbinding (unsubscribing) one exchange from another.
 type ExchangeUnbindOptions struct {
-	ConnectionId            int
+	ConnectionID            int
 	DestinationExchangeName string
 	SourceExchangeName      string
 	RoutingKey              string
@@ -55,25 +56,25 @@ type ExchangeUnbindOptions struct {
 }
 
 // Gets an initialised connection by ID, or returns the last initialised one if ID is 0
-func (exchange *Exchange) GetConn(connId int) (*amqpDriver.Connection, error) {
-	if connId == 0 {
-		conn := (*exchange.Connections)[*exchange.MaxConnId]
+func (exchange *Exchange) GetConn(connID int) (*amqpDriver.Connection, error) {
+	if connID == 0 {
+		conn := (*exchange.Connections)[*exchange.MaxConnID]
 		if conn == nil {
-			return &amqpDriver.Connection{}, fmt.Errorf("Connection not initialised")
-		}
-		return conn, nil
-	} else {
-		conn := (*exchange.Connections)[connId]
-		if conn == nil {
-			return &amqpDriver.Connection{}, fmt.Errorf("Connection with ID %d not initialised", connId)
+			return &amqpDriver.Connection{}, fmt.Errorf("connection not initialised")
 		}
 		return conn, nil
 	}
+
+	conn := (*exchange.Connections)[connID]
+	if conn == nil {
+		return &amqpDriver.Connection{}, fmt.Errorf("connection with ID %d not initialised", connID)
+	}
+	return conn, nil
 }
 
 // Declare creates a new exchange given the provided options.
 func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
-	conn, err := exchange.GetConn(options.ConnectionId)
+	conn, err := exchange.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
 
 // Delete removes an exchange from the remote server given the exchange name.
 func (exchange *Exchange) Delete(name string, options ExchangeDeleteOptions) error {
-	conn, err := exchange.GetConn(options.ConnectionId)
+	conn, err := exchange.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -117,7 +118,7 @@ func (exchange *Exchange) Delete(name string, options ExchangeDeleteOptions) err
 
 // Bind subscribes one exchange to another.
 func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
-	conn, err := exchange.GetConn(options.ConnectionId)
+	conn, err := exchange.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -139,7 +140,7 @@ func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
 
 // Unbind removes a subscription from one exchange to another.
 func (exchange *Exchange) Unbind(options ExchangeUnbindOptions) error {
-	conn, err := exchange.GetConn(options.ConnectionId)
+	conn, err := exchange.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}

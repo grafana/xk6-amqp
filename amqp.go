@@ -4,8 +4,8 @@ package amqp
 import (
 	"context"
 	"encoding/json"
-	"time"
 	"fmt"
+	"time"
 
 	amqpDriver "github.com/rabbitmq/amqp091-go"
 	"github.com/vmihailenco/msgpack/v5"
@@ -18,7 +18,7 @@ const version = "v0.3.0"
 type AMQP struct {
 	Version     string
 	Connections *map[int]*amqpDriver.Connection
-	MaxConnId   *int
+	MaxConnID   *int
 	Queue       *Queue
 	Exchange    *Exchange
 }
@@ -30,7 +30,7 @@ type Options struct {
 
 // PublishOptions defines a message payload with delivery options.
 type PublishOptions struct {
-	ConnectionId  int
+	ConnectionID  int
 	QueueName     string
 	Body          string
 	Headers       amqpDriver.Table
@@ -64,7 +64,7 @@ type ListenerType func(string) error
 
 // ListenOptions defines options for subscribing to message(s) within a queue.
 type ListenOptions struct {
-	ConnectionId int
+	ConnectionID int
 	Listener     ListenerType
 	QueueName    string
 	Consumer     string
@@ -80,31 +80,31 @@ const messagepack = "application/x-msgpack"
 // Start establishes a session with an AMQP server given the provided options.
 func (amqp *AMQP) Start(options Options) (int, error) {
 	conn, err := amqpDriver.Dial(options.ConnectionURL)
-	*amqp.MaxConnId += 1
-	(*amqp.Connections)[*amqp.MaxConnId] = conn
-	return *amqp.MaxConnId, err
+	*amqp.MaxConnID++
+	(*amqp.Connections)[*amqp.MaxConnID] = conn
+	return *amqp.MaxConnID, err
 }
 
 // Gets an initialised connection by ID, or returns the last initialised one if ID is 0
-func (amqp *AMQP) GetConn(connId int) (*amqpDriver.Connection, error) {
-	if connId == 0 {
-		conn := (*amqp.Connections)[*amqp.MaxConnId]
+func (amqp *AMQP) GetConn(connID int) (*amqpDriver.Connection, error) {
+	if connID == 0 {
+		conn := (*amqp.Connections)[*amqp.MaxConnID]
 		if conn == nil {
-			return &amqpDriver.Connection{}, fmt.Errorf("Connection not initialised")
-		}
-		return conn, nil
-	} else {
-		conn := (*amqp.Connections)[connId]
-		if conn == nil {
-			return &amqpDriver.Connection{}, fmt.Errorf("Connection with ID %d not initialised", connId)
+			return &amqpDriver.Connection{}, fmt.Errorf("connection not initialised")
 		}
 		return conn, nil
 	}
+
+	conn := (*amqp.Connections)[connID]
+	if conn == nil {
+		return &amqpDriver.Connection{}, fmt.Errorf("connection with ID %d not initialised", connID)
+	}
+	return conn, nil
 }
 
 // Publish delivers the payload using options provided.
 func (amqp *AMQP) Publish(options PublishOptions) error {
-	conn, err := amqp.GetConn(options.ConnectionId)
+	conn, err := amqp.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 
 // Listen binds to an AMQP queue in order to receive message(s) as they are received.
 func (amqp *AMQP) Listen(options ListenOptions) error {
-	conn, err := amqp.GetConn(options.ConnectionId)
+	conn, err := amqp.GetConn(options.ConnectionID)
 	if err != nil {
 		return err
 	}
@@ -200,19 +200,19 @@ func (amqp *AMQP) Listen(options ListenOptions) error {
 
 func init() {
 	connections := make(map[int]*amqpDriver.Connection)
-	maxConnId := 0
+	maxConnID := 0
 	queue := Queue{
 		Connections: &connections,
-		MaxConnId:   &maxConnId,
+		MaxConnID:   &maxConnID,
 	}
 	exchange := Exchange{
 		Connections: &connections,
-		MaxConnId:   &maxConnId,
+		MaxConnID:   &maxConnID,
 	}
 	generalAMQP := AMQP{
 		Version:     version,
 		Connections: &connections,
-		MaxConnId:   &maxConnId,
+		MaxConnID:   &maxConnID,
 		Queue:       &queue,
 		Exchange:    &exchange,
 	}
