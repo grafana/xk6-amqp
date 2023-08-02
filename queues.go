@@ -1,13 +1,16 @@
 package amqp
 
 import (
+	"fmt"
+
 	amqpDriver "github.com/rabbitmq/amqp091-go"
 )
 
 // Queue defines a connection to a point-to-point destination.
 type Queue struct {
-	Version    string
-	Connection *amqpDriver.Connection
+	Version     string
+	Connections *map[int]*amqpDriver.Connection
+	MaxConnID   *int
 }
 
 // QueueOptions defines configuration settings for accessing a queue.
@@ -17,6 +20,7 @@ type QueueOptions struct {
 
 // DeclareOptions provides queue options when declaring (creating) a queue.
 type DeclareOptions struct {
+	ConnectionID     int
 	Name             string
 	Durable          bool
 	DeleteWhenUnused bool
@@ -25,8 +29,19 @@ type DeclareOptions struct {
 	Args             amqpDriver.Table
 }
 
+// QueueInspectOptions provide options when inspecting a queue.
+type QueueInspectOptions struct {
+	ConnectionID int
+}
+
+// QueueDeleteOptions provide options when deleting a queue.
+type QueueDeleteOptions struct {
+	ConnectionID int
+}
+
 // QueueBindOptions provides options when binding a queue to an exchange in order to receive message(s).
 type QueueBindOptions struct {
+	ConnectionID int
 	QueueName    string
 	ExchangeName string
 	RoutingKey   string
@@ -36,15 +51,42 @@ type QueueBindOptions struct {
 
 // QueueUnbindOptions provides options when unbinding a queue from an exchange to stop receiving message(s).
 type QueueUnbindOptions struct {
+	ConnectionID int
 	QueueName    string
 	ExchangeName string
 	RoutingKey   string
 	Args         amqpDriver.Table
 }
 
+// QueuePurgeOptions provide options when purging (emptying) a queue.
+type QueuePurgeOptions struct {
+	ConnectionID int
+}
+
+// GetConn gets an initialised connection by ID, or returns the last initialised one if ID is 0
+func (queue *Queue) GetConn(connID int) (*amqpDriver.Connection, error) {
+	if connID == 0 {
+		conn := (*queue.Connections)[*queue.MaxConnID]
+		if conn == nil {
+			return &amqpDriver.Connection{}, fmt.Errorf("connection not initialised")
+		}
+		return conn, nil
+	}
+
+	conn := (*queue.Connections)[connID]
+	if conn == nil {
+		return &amqpDriver.Connection{}, fmt.Errorf("connection with ID %d not initialised", connID)
+	}
+	return conn, nil
+}
+
 // Declare creates a new queue given the provided options.
 func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
-	ch, err := queue.Connection.Channel()
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return amqpDriver.Queue{}, err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
@@ -62,8 +104,12 @@ func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 }
 
 // Inspect provides queue metadata given queue name.
-func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
-	ch, err := queue.Connection.Channel()
+func (queue *Queue) Inspect(name string, options QueueInspectOptions) (amqpDriver.Queue, error) {
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return amqpDriver.Queue{}, err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
 	}
@@ -74,8 +120,12 @@ func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
 }
 
 // Delete removes a queue from the remote server given the queue name.
-func (queue *Queue) Delete(name string) error {
-	ch, err := queue.Connection.Channel()
+func (queue *Queue) Delete(name string, options QueueDeleteOptions) error {
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return err
 	}
@@ -93,7 +143,11 @@ func (queue *Queue) Delete(name string) error {
 
 // Bind subscribes a queue to an exchange in order to receive message(s).
 func (queue *Queue) Bind(options QueueBindOptions) error {
-	ch, err := queue.Connection.Channel()
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return err
 	}
@@ -111,7 +165,11 @@ func (queue *Queue) Bind(options QueueBindOptions) error {
 
 // Unbind removes a queue subscription from an exchange to discontinue receiving message(s).
 func (queue *Queue) Unbind(options QueueUnbindOptions) error {
-	ch, err := queue.Connection.Channel()
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return err
 	}
@@ -127,8 +185,12 @@ func (queue *Queue) Unbind(options QueueUnbindOptions) error {
 }
 
 // Purge removes all non-consumed message(s) from the specified queue.
-func (queue *Queue) Purge(name string, noWait bool) (int, error) {
-	ch, err := queue.Connection.Channel()
+func (queue *Queue) Purge(name string, noWait bool, options QueuePurgeOptions) (int, error) {
+	conn, err := queue.GetConn(options.ConnectionID)
+	if err != nil {
+		return 0, err
+	}
+	ch, err := conn.Channel()
 	if err != nil {
 		return 0, err
 	}
