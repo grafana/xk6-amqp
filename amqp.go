@@ -85,7 +85,7 @@ func (amqp *AMQP) Start(options Options) (int, error) {
 	return *amqp.MaxConnID, err
 }
 
-// Gets an initialised connection by ID, or returns the last initialised one if ID is 0
+// GetConn gets an initialised connection by ID, or returns the last initialised one if ID is 0
 func (amqp *AMQP) GetConn(connID int) (*amqpDriver.Connection, error) {
 	if connID == 0 {
 		conn := (*amqp.Connections)[*amqp.MaxConnID]

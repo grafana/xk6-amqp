@@ -55,7 +55,7 @@ type ExchangeUnbindOptions struct {
 	Args                    amqpDriver.Table
 }
 
-// Gets an initialised connection by ID, or returns the last initialised one if ID is 0
+// GetConn gets an initialised connection by ID, or returns the last initialised one if ID is 0
 func (exchange *Exchange) GetConn(connID int) (*amqpDriver.Connection, error) {
 	if connID == 0 {
 		conn := (*exchange.Connections)[*exchange.MaxConnID]

@@ -63,7 +63,7 @@ type QueuePurgeOptions struct {
 	ConnectionID int
 }
 
-// Gets an initialised connection by ID, or returns the last initialised one if ID is 0
+// GetConn gets an initialised connection by ID, or returns the last initialised one if ID is 0
 func (queue *Queue) GetConn(connID int) (*amqpDriver.Connection, error) {
 	if connID == 0 {
 		conn := (*queue.Connections)[*queue.MaxConnID]
