@@ -12,7 +12,7 @@ import (
 	"go.k6.io/k6/js/modules"
 )
 
-const version = "v0.3.0"
+const version = "v0.4.0"
 
 // AMQP type holds connection to a remote AMQP server.
 type AMQP struct {
@@ -39,14 +39,14 @@ type PublishOptions struct {
 	Mandatory     bool
 	Immediate     bool
 	Persistent    bool
-	CorrelationId string
+	CorrelationID string
 	ReplyTo       string
 	Expiration    string
-	MessageId     string
+	MessageID     string
 	Timestamp     int64 // unix epoch timestamp in seconds
 	Type          string
-	UserId        string
-	AppId         string
+	UserID        string
+	AppID         string
 }
 
 // ConsumeOptions defines options for use when consuming a message.
@@ -145,13 +145,13 @@ func (amqp *AMQP) Publish(options PublishOptions) error {
 		publishing.Timestamp = time.Unix(options.Timestamp, 0)
 	}
 
-	publishing.CorrelationId = options.CorrelationId
+	publishing.CorrelationId = options.CorrelationID
 	publishing.ReplyTo = options.ReplyTo
 	publishing.Expiration = options.Expiration
-	publishing.MessageId = options.MessageId
+	publishing.MessageId = options.MessageID
 	publishing.Type = options.Type
-	publishing.UserId = options.UserId
-	publishing.AppId = options.AppId
+	publishing.UserId = options.UserID
+	publishing.AppId = options.AppID
 
 	return ch.PublishWithContext(
 		context.Background(), // TODO: use vu context
