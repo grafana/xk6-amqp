@@ -123,3 +123,25 @@ default ✓ [======================================] 1 VUs  00m00.0s/10m0s  1/1 
 ```
 
 Inspect examples folder for more details.
+
+# Testing Locally
+
+This repository includes a [docker-compose.yml](./docker-compose.yml) file that starts RabbitMQ with Management Plugin for testing the extension locally.
+
+> :warning: This environment is intended for testing only and should not be used for production purposes.
+
+1. Start the docker compose environment.
+   ```bash
+   docker compose up -d
+   ```
+   Output should appear similar to the following:
+   ```shell
+   ✔ Network xk6-amqp_default       Created               ...    0.0s
+   ✔ Container xk6-amqp-rabbitmq-1  Started               ...    0.2s
+   ```
+2. Use your [custom k6 binary](#build) to run a k6 test script connecting to your RabbitMQ server started in the previous step.
+   ```bash
+   ./k6 run examples/test.js
+   ```
+3. Use the RabbitMQ admin console by accessing [http://localhost:15672/](http://localhost:15672/), then login using `guest` for both the Username and Password.
+   This will allow you to monitor activity within your messaging server.
