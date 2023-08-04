@@ -12,7 +12,7 @@ import (
 	"go.k6.io/k6/js/modules"
 )
 
-const version = "v0.4.0"
+const version = "v0.4.1"
 
 // AMQP type holds connection to a remote AMQP server.
 type AMQP struct {
