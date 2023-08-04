@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/rabbitmq/amqp091-go v1.5.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.k6.io/k6 v0.45.0
+	go.k6.io/k6 v0.45.1
 )
 
 require (
