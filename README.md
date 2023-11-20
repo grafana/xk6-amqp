@@ -1,3 +1,12 @@
+> ### ⚠️ Deprecated!!!
+>
+> This extension was originally created as a _proof of concept_.
+> At this time, there are no maintainers available to support this extension.
+>
+> USE AT YOUR OWN RISK!
+
+<br />
+
 # xk6-amqp
 
 A k6 extension for publishing and consuming messages from queues and exchanges.
