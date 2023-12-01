@@ -1,10 +1,10 @@
-> ### ⚠️ Deprecated!!!
+> ### ⚠️ (note: this is a fork of the original grafana/xk6-amqp)
 >
-> This extension was originally created as a _proof of concept_.
+> This is a new foster home for xk6-amqp.
+> Let's see if we can find a future for this amazing little extension.
+> 
 > At this time, there are no maintainers available to support this extension.
->
-> USE AT YOUR OWN RISK!
-
+> 
 <br />
 
 # xk6-amqp
