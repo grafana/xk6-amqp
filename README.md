@@ -1,9 +1,8 @@
-> ### ⚠️ Deprecated!!!
+> ### ⚠️ (this repo has been deprecated & archived at grafana/xk6-amqp)
 >
-> This extension was originally created as a _proof of concept_.
-> At this time, there are no maintainers available to support this extension.
->
-> USE AT YOUR OWN RISK!
+> This is a foster home for xk6-amqp.
+> Let's see what we can do to help find a future for this amazing protocol
+> Please feel free to add comments/requests in the discussion.
 
 <br />
 
